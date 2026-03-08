@@ -1,0 +1,117 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-white text-gray-900;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+  }
+  
+  h2 {
+    font-size: 18px;
+    font-weight: 600;
+  }
+  
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-3 py-2 text-sm bg-black text-white rounded hover:bg-gray-800 transition-all duration-150 font-medium;
+  }
+  
+  .btn-secondary {
+    @apply px-3 py-2 text-sm bg-white text-black border border-gray-300 rounded hover:bg-gray-50 hover:border-gray-400 transition-all duration-150 font-medium;
+  }
+  
+  .btn-danger {
+    @apply px-3 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition-all duration-150 font-medium;
+  }
+  
+  .input-field {
+    @apply w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all duration-150 bg-white;
+  }
+  
+  .card {
+    @apply bg-white rounded shadow-sm p-4 border border-gray-200 transition-all duration-150 hover:shadow;
+  }
+}
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Custom checkbox styling */
+input[type="checkbox"] {
+  @apply cursor-pointer;
+}
+
+/* Keyboard shortcut styling */
+kbd {
+  @apply px-2 py-1 text-xs font-mono bg-gray-200 text-gray-700 rounded border border-gray-300 shadow-sm;
+}
+
+/* Drag and drop styling */
+[draggable="true"] {
+  cursor: move;
+}
+
+[draggable="true"]:active {
+  opacity: 0.5;
+  cursor: grabbing;
+}

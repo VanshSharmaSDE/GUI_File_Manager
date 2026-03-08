@@ -1,8 +1,68 @@
-import React from 'react';
-import { FaTimes, FaCog } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaTimes, FaCog, FaFolder, FaFolderPlus, FaTrash } from 'react-icons/fa';
+import { api } from '../services/api';
+import toast from 'react-hot-toast';
 
-const Settings = ({ isOpen, onClose, settings, onSettingsChange }) => {
+const Settings = ({ isOpen, onClose, settings, onSettingsChange, folders, onFolderCreated, onFolderDeleted }) => {
+  const [activeTab, setActiveTab] = useState('general');
+  const [newFolderName, setNewFolderName] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(null);
+
+  useEffect(() => {
+    if (folders) {
+      console.log('Settings: folders updated:', folders);
+    }
+  }, [folders]);
+
   if (!isOpen) return null;
+
+  const handleAddFolder = async () => {
+    if (!newFolderName.trim()) {
+      toast.error('Folder name cannot be empty');
+      return;
+    }
+    
+    if (folders && folders.includes(newFolderName)) {
+      toast.error('Folder already exists');
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      await api.createFolder(newFolderName);
+      toast.success(`Folder "${newFolderName}" created`);
+      setNewFolderName('');
+      if (onFolderCreated) {
+        await onFolderCreated();
+      }
+    } catch (error) {
+      console.error('Failed to create folder:', error);
+      toast.error('Failed to create folder');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleDeleteFolder = async (folderName) => {
+    if (!confirm(`Delete folder "${folderName}"? This will remove all files inside.`)) {
+      return;
+    }
+
+    setIsDeleting(folderName);
+    try {
+      await api.deleteItem(folderName);
+      toast.success(`Folder "${folderName}" deleted`);
+      if (onFolderDeleted) {
+        await onFolderDeleted(folderName);
+      }
+    } catch (error) {
+      console.error('Failed to delete folder:', error);
+      toast.error('Failed to delete folder');
+    } finally {
+      setIsDeleting(null);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
@@ -21,8 +81,33 @@ const Settings = ({ isOpen, onClose, settings, onSettingsChange }) => {
           </button>
         </div>
 
+        {/* Tabs */}
+        <div className="flex border-b border-gray-200 px-6">
+          <button
+            onClick={() => setActiveTab('general')}
+            className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
+              activeTab === 'general'
+                ? 'border-black text-black'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            General
+          </button>
+          <button
+            onClick={() => setActiveTab('folders')}
+            className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
+              activeTab === 'folders'
+                ? 'border-black text-black'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Folders
+          </button>
+        </div>
+
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
+          {activeTab === 'general' && (
             <div className="space-y-6">
               <div>
                 <h3 className="text-lg font-semibold text-black mb-4">Editor Settings</h3>
@@ -103,6 +188,71 @@ const Settings = ({ isOpen, onClose, settings, onSettingsChange }) => {
                 </div>
               </div>
             </div>
+          )}
+
+          {activeTab === 'folders' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-black mb-4">Workspace Folders</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  These folders exist in your workspace directory. Create or delete folders to manage your workspace.
+                </p>
+
+                {/* Existing Folders */}
+                <div className="space-y-2 mb-6">
+                  {folders && folders.length > 0 ? (
+                    folders.map((folderName) => (
+                      <div
+                        key={folderName}
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <FaFolder className="text-lg text-gray-600" />
+                          <span className="font-medium text-black text-sm">{folderName}</span>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteFolder(folderName)}
+                          disabled={isDeleting === folderName}
+                          className="p-2 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                          title="Delete folder"
+                        >
+                          <FaTrash className="text-sm text-red-600" />
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500 text-sm">
+                      No folders found. Create one below.
+                    </div>
+                  )}
+                </div>
+
+                {/* Add New Folder */}
+                <div className="border-t pt-6">
+                  <h4 className="font-medium text-black text-sm mb-3">Create New Folder</h4>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="text"
+                      value={newFolderName}
+                      onChange={(e) => setNewFolderName(e.target.value)}
+                      placeholder="Folder name"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                      onKeyPress={(e) => e.key === 'Enter' && !isCreating && handleAddFolder()}
+                      disabled={isCreating}
+                    />
+                    <button
+                      onClick={handleAddFolder}
+                      disabled={isCreating || !newFolderName.trim()}
+                      className="btn-primary flex items-center space-x-2 disabled:opacity-50"
+                    >
+                      <FaFolderPlus className="text-xs" />
+                      <span>{isCreating ? 'Creating...' : 'Create'}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}

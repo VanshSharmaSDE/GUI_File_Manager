@@ -37,6 +37,32 @@ const Dashboard = () => {
     setSettings(newSettings);
   };
 
+  const handleFolderCreated = async () => {
+    // Reload folder structure after folder creation
+    await loadFolderStructure();
+    setTimeout(() => loadFolderStructure(), 100);
+    setTimeout(() => loadFolderStructure(), 300);
+    setTimeout(() => loadFolderStructure(), 600);
+  };
+
+  const handleFolderDeleted = async (deletedFolderName) => {
+    // Reload folder structure after folder deletion
+    await loadFolderStructure();
+    setTimeout(() => loadFolderStructure(), 100);
+    setTimeout(() => loadFolderStructure(), 300);
+    setTimeout(() => loadFolderStructure(), 600);
+    
+    // If selected folder was deleted, switch to first available folder
+    if (selectedFolder === deletedFolderName) {
+      const remainingFolders = Object.keys(folderStructure).filter(f => f !== deletedFolderName);
+      if (remainingFolders.length > 0) {
+        setSelectedFolder(remainingFolders[0]);
+      } else {
+        setSelectedFolder(null);
+      }
+    }
+  };
+
   const loadFolderStructure = async () => {
     try {
       setIsLoading(true);
@@ -322,6 +348,9 @@ const Dashboard = () => {
         onClose={() => setShowSettings(false)}
         settings={settings}
         onSettingsChange={handleSettingsChange}
+        folders={Object.keys(folderStructure)}
+        onFolderCreated={handleFolderCreated}
+        onFolderDeleted={handleFolderDeleted}
       />
     </div>
   );
